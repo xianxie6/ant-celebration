@@ -15,38 +15,12 @@ body{background:var(--sky-top);font-family:'Bricolage Grotesque','PingFang SC','
 .hero.airborne{bottom:31%;height:34%}
 #wall .hero{bottom:25%;height:33%}
 #wall .stage-podium{height:24%}
-#wall #sky{z-index:5;pointer-events:none}
-#wall #wt,#wall #bar,#wall #note{z-index:7}
-.pose-burst{position:absolute;z-index:5;left:50%;bottom:45%;width:var(--size);pointer-events:none;animation:pose-burst 1.05s ease-out both}
-@keyframes pose-burst{from{opacity:.95;transform:translate(-50%,-50%) scale(.3)}to{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--spin)) scale(.85)}}
-@keyframes hero-pop{from{transform:translate(-50%,26px) scale(.84)}}
-@keyframes hero-bob{50%{transform:translate(-50%,-7px)}}
-@media(max-width:700px){
- :root{--sky-top:#3069b0}
- .stage-podium{height:21%}
- .hero{bottom:22%;height:32%;max-width:54%}
- .hero.airborne{bottom:27%;height:33%}
- #wall .hero{height:29%;bottom:24%}
- #stage .pr:not([data-a=".86"]){min-width:0}
- #stage .crowd{height:29vh;max-width:48%;object-fit:contain;object-position:bottom}
-}
-@media(prefers-reduced-motion:reduce){.hero.on{animation:none}.pose-burst{display:none}}
-.tx{position:absolute;left:0;right:0;top:10vh;text-align:center;opacity:0;padding:0 6vw;pointer-events:none;text-shadow:0 3px 18px #0a3a7a99;z-index:4}
-.big{font-weight:500;font-size:clamp(28px,5.4vw,70px);line-height:1.25}.big b{color:#ffd6ea;font-weight:800}
-.mono{font:clamp(12px,1.5vw,16px)/1.6 'JetBrains Mono',monospace;opacity:.9;margin-top:8px}
-.pr{position:absolute;opacity:0;z-index:3;filter:drop-shadow(0 10px 14px #0005);pointer-events:none}
-.crowd{position:absolute;bottom:0;z-index:6;height:46vh;transform:translateY(110%);pointer-events:none}
-#fin{position:absolute;left:0;right:0;top:6vh;text-align:center;opacity:0;z-index:8;text-shadow:0 4px 24px #0a3a7a99}
-#fin h1{font-weight:800;font-size:clamp(40px,11vw,150px);letter-spacing:-.04em;line-height:1}#fin h1 em{color:var(--red);font-style:normal}
-#fin h1 i{font:400 .2em 'JetBrains Mono';letter-spacing:0}
-#hint{position:absolute;bottom:3vh;width:100%;text-align:center;font:13px 'JetBrains Mono';z-index:9;opacity:.85}
-#wall{position:relative;height:100vh;height:100svh;overflow:hidden;background:var(--sky-top)}
-
-#sky{position:absolute;inset:0;z-index:2;overflow:hidden}
-.c{position:absolute;bottom:0;left:0;will-change:transform;animation:rise var(--d) linear var(--dl) 1 both}
-.s{animation:sway var(--sd) ease-in-out infinite alternate;animation-delay:var(--sdl)}
-@keyframes rise{from{transform:translateY(25vh)}to{transform:translateY(-135vh)}}
-@keyframes sway{from{transform:translateX(calc(var(--a)*-1))}to{transform:translateX(var(--a))}}
+#wall #sky{position:absolute;left:12px;right:12px;z-index:2;display:grid;gap:8px 16px;overflow:hidden}
+.cloud-slot{position:relative;display:grid;place-items:center;min-width:0;min-height:0}
+.c{will-change:transform,opacity;animation:rise 13s linear var(--dl,0s) both}
+.s{animation:sway 5s ease-in-out infinite alternate;animation-delay:var(--sdl,0s)}
+@keyframes rise{0%{opacity:0;transform:translateY(9px)}6%,93%{opacity:1}100%{opacity:0;transform:translateY(-9px)}}
+@keyframes sway{from{transform:translateX(-4px)}to{transform:translateX(4px)}}
 .cloud{position:relative;width:var(--w);aspect-ratio:1.7;display:grid;place-items:center;padding:14% 16% 20%;background-size:100% 100%}
 .cloud.art{aspect-ratio:var(--ratio);padding:0;background-repeat:no-repeat}
 .cloud.art span{position:absolute;width:72%;top:64%;left:50%;transform:translate(-50%,-50%);overflow-wrap:anywhere}
@@ -79,7 +53,7 @@ body{background:var(--sky-top);font-family:'Bricolage Grotesque','PingFang SC','
 <section id="wall"><picture class="scene"><source media="(max-width: 700px)" srcset="assets/bg-mobile.webp"><img src="assets/bg-desktop.webp" alt=""></picture><img class="stage-podium" src="assets/podium.webp" alt=""><img class="hero on" style="animation:none" src="assets/hero-p6.webp" alt="主角侧耳听留言"><div id="sky"></div>
 <div id="wt"><h2>达里奥，我想对你<em>说</em></h2><p>匿名写一句话，它会变成一朵云，一直往上飘 ☁</p></div>
 <div id="note"></div><div id="bar"><input id="in" maxlength="100" placeholder="我想对你说…（100 字以内）" autocomplete="off"><button id="go">飘上去</button></div></section>
-<script src="assets/celebration-sound.js"></script>
+<script src="assets/celebration-sound.js?v=2"></script>
 <script>
 const SB_URL="https://cjyrcaokwaupkgevesve.supabase.co",SB_KEY="sb_publishable_AC5--X3hdOy04IH1SUGcRg_Is0gmedJ";
 const CLOUD_IMGS=[{"src": "assets/cloud-1.png", "ratio": 2.1223}, {"src": "assets/cloud-2.png", "ratio": 2.8281}, {"src": "assets/cloud-3.png", "ratio": 2.2037}, {"src": "assets/cloud-4.png", "ratio": 2.5333}, {"src": "assets/cloud-5.png", "ratio": 2.2249}];
@@ -135,33 +109,83 @@ function f(){const tr=$('#track'),p=Math.max(0,Math.min(1,-tr.getBoundingClientR
  const fo=win(p,.8,1.2,.06);$('#fin').style.opacity=fo;$('#hint').style.opacity=p>.9?.9:0}
 addEventListener('scroll',f,{passive:true});addEventListener('resize',f);f();
 /* ---------- 最后一页：留言云 ---------- */
-const sky=$('#sky'),note=$('#note'),mob=innerWidth<700,N=mob?9:16;
-let pool=[],shown=new Set(),mine=new Set(),seen=new Set(),first=true,tmr,local=!SB_URL;
+const sky=$('#sky'),note=$('#note'),wall=$('#wall');
+let pool=[],slots=[],first=true,tmr,local=!SB_URL,displayOrder=0;
+const lastShown=new Map(),mine=new Set();
 const H={apikey:SB_KEY,'Content-Type':'application/json'},API=SB_URL+'/rest/v1/messages';
 function say(t){note.textContent=t;note.style.opacity=1;clearTimeout(tmr);tmr=setTimeout(()=>note.style.opacity=0,3500)}
-function pick(){const c=pool.filter(m=>!shown.has(m.id)),a=c.length?c:pool;return a[Math.floor(Math.random()*a.length)]}
-function cloud(m,o={}){
- if(sky.childElementCount>=N){
-  if(!o.once)return;
-  const oldest=sky.querySelector('.c:not(.once)')||sky.firstElementChild;
-  shown.delete(oldest.dataset.messageId);
-  oldest.remove();
- }
- const len=m.text.length,w=Math.min(mob?(len>70?Math.min(300,innerWidth-24):250):320,Math.max(mob?150:170,90+len*(mob?9:11))),e=document.createElement('div');
- e.dataset.messageId=m.id;
- e.className='c'+(o.mine?' mine':'')+(o.once?' once':'');
- e.style.cssText=`left:${R(2,Math.max(3,innerWidth-w-8))}px;--d:${o.d||R(32,58)}s;--dl:${o.dl??-R(0,50)}s;--a:${R(25,90)}px;--sd:${R(5,10)}s;--sdl:${-R(0,8)}s`;
- // The taller silhouettes leave more room for multi-line messages.
+function nextMessage(){
+ const visible=new Set(slots.map(slot=>slot.firstElementChild?.dataset.messageId));
+ return pool.filter(message=>!visible.has(message.id)).sort((a,b)=>
+  Number(a.id.startsWith('g'))-Number(b.id.startsWith('g')) ||
+  (lastShown.get(a.id)||0)-(lastShown.get(b.id)||0)
+ )[0];
+}
+function drawCloud(slot,message,delay=0){
+ slot.replaceChildren();
+ if(!message)return;
+ const len=message.text.length;
  const choices=len>40?CLOUD_IMGS.filter(img=>img.ratio<2.3):CLOUD_IMGS;
  const art=choices[Math.floor(Math.random()*choices.length)];
- const bg=art?`--ratio:${art.ratio};background-image:url(${art.src})`:'';
- const fontSize=len>70?(w<300?11:12):len>40?13:15;
- e.innerHTML=`<div class="s"><div class="cloud${art?' art':' css'}${len>70?' long':''}" style="--w:${w}px;--f:${fontSize}px;${bg}"><span></span></div></div>`;
- e.querySelector('span').textContent=m.text;shown.add(m.id);sky.appendChild(e);
- e.addEventListener('animationend',ev=>{if(ev.animationName!=='rise')return;shown.delete(m.id);e.remove();refill()});return e}
-const cap=()=>Math.min(N,Math.max(pool.length,5));
-function refill(){if(pool.length&&sky.childElementCount<cap())cloud(pick(),{dl:0})}
-function setPool(a){const was=pool.length;pool=a;if(!was&&a.length)for(let i=0;i<cap();i++)cloud(pick());else refill()}
+ const ratio=art?.ratio||1.7;
+ const availableWidth=slot.clientWidth-12,availableHeight=slot.clientHeight-24;
+ const preferredWidth=Math.max(156,100+len*9);
+ const width=Math.max(1,Math.min(320,preferredWidth,availableWidth,availableHeight*ratio));
+ const fontSize=len>70?(width<260?11:12):len>40?13:15;
+ const cloud=document.createElement('div');
+ cloud.dataset.messageId=message.id;
+ cloud.className='c'+(mine.has(message.id)?' mine':'');
+ cloud.style.cssText=`--dl:${delay}s;--sdl:${-Math.random()*5}s`;
+ cloud.innerHTML=`<div class="s"><div class="cloud${art?' art':' css'}${len>70?' long':''}" style="--w:${width}px;--f:${fontSize}px;--ratio:${ratio};${art?`background-image:url(${art.src})`:''}"><span></span></div></div>`;
+ cloud.querySelector('span').textContent=message.text;
+ lastShown.set(message.id,++displayOrder);
+ slot.append(cloud);
+ cloud.addEventListener('animationend',event=>{
+  if(event.target!==cloud)return;
+  cloud.remove();
+  drawCloud(slot,nextMessage());
+ });
+}
+function setPool(messages){
+ pool=messages;
+ const ids=new Set(pool.map(message=>message.id));
+ slots.forEach((slot,index)=>{
+  if(!ids.has(slot.firstElementChild?.dataset.messageId))drawCloud(slot,nextMessage(),-1-index/slots.length*8);
+ });
+}
+function layoutClouds(){
+ const top=$('#wt').offsetTop+$('#wt').offsetHeight+12;
+ const bottom=wall.clientHeight-$('#bar').offsetTop+30;
+ sky.style.top=top+'px';
+ sky.style.bottom=bottom+'px';
+ const columns=Math.max(1,Math.min(4,Math.floor((sky.clientWidth+16)/290)));
+ const rows=Math.max(1,Math.min(3,Math.floor((sky.clientHeight+8)/170)));
+ sky.style.gridTemplateColumns=`repeat(${columns},minmax(0,1fr))`;
+ sky.style.gridTemplateRows=`repeat(${rows},minmax(0,1fr))`;
+ const count=columns*rows;
+ if(slots.length===count&&slots.every(slot=>slot.clientWidth===slot.layoutWidth&&slot.clientHeight===slot.layoutHeight))return;
+ slots=Array.from({length:count},()=>{
+  const slot=document.createElement('div');
+  slot.className='cloud-slot';
+  return slot;
+ });
+ sky.replaceChildren(...slots);
+ slots.forEach((slot,index)=>{
+  slot.layoutWidth=slot.clientWidth;
+  slot.layoutHeight=slot.clientHeight;
+  drawCloud(slot,nextMessage(),-1-index/count*8);
+ });
+}
+const cloudLayout=new ResizeObserver(layoutClouds);
+[wall,$('#wt'),$('#bar')].forEach(element=>cloudLayout.observe(element));
+function showOwnMessage(message){
+ if(!slots.length)layoutClouds();
+ const target=slots.find(slot=>!slot.firstElementChild)||
+  slots.find(slot=>slot.firstElementChild.dataset.messageId.startsWith('g'))||
+  slots.reduce((oldest,slot)=>(lastShown.get(slot.firstElementChild.dataset.messageId)||0)<
+   (lastShown.get(oldest.firstElementChild.dataset.messageId)||0)?slot:oldest);
+ drawCloud(target,message,-.8);
+}
 const GREETINGS=[
  '恭喜 Anthropic 上市！',
  '达里奥，恭喜你和团队走到这一步！',
@@ -173,8 +197,7 @@ async function load(){
  if(local){if(first){first=false;say('演示模式：留言只在本次打开期间有效');setPool(pool.length?pool:GREETINGS)}return}
  try{const r=await fetch(API+'?select=id,text&order=created_at.desc&limit=300',{headers:H});if(!r.ok)throw new Error('留言读取失败');const d=await r.json();
   const a=d.filter(m=>m.id!==1||m.text!=='【功能测试】留言云已接通 ☁️').map(m=>({id:'s'+m.id,text:String(m.text).slice(0,100)}));
-  if(!first)a.forEach(m=>{if(!seen.has(m.id)&&!mine.has(m.id))cloud(m,{once:1,d:45,dl:0})});
-  a.forEach(m=>seen.add(m.id));first=false;setPool([...a,...GREETINGS])}
+  first=false;setPool([...a,...GREETINGS])}
  catch(e){if(first){first=false;say('留言库暂时连不上');setPool(GREETINGS)}}
 }
 async function send(){
@@ -184,8 +207,9 @@ async function send(){
  $('#go').disabled=true;
  try{let id='l'+Date.now();
   if(!local){const r=await fetch(API,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify({text:t})});if(!r.ok)throw 0;id='s'+(await r.json())[0].id}
-  else pool=pool.concat({id,text:t});
-  mine.add(id);seen.add(id);cloud({id,text:t},{mine:1,once:1,d:45,dl:0});
+  const message={id,text:t};
+  pool=[message,...pool.filter(item=>item.id!==id)];
+  mine.add(id);showOwnMessage(message);
   try{localStorage.setItem('lt',Date.now())}catch(e){}
   $('#in').value='';say('你的话变成云，飘上去了 ☁')
  }catch(e){say('没发出去，再试一次')}

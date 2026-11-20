@@ -9,6 +9,7 @@
  let noise;
  let enabled = true;
  let previous = 0;
+ let pending = [];
 
  function envelope(source, start, duration, volume, attack = .008) {
   const gain = audio.createGain();
@@ -90,7 +91,10 @@
     for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
    }
    applyVolume();
-   audio.resume().catch(() => {});
+   audio.resume().then(() => {
+    if (enabled) playCues(pending);
+    pending = [];
+   }).catch(() => {});
   } catch {
    button.title = '浏览器暂时无法播放音效';
   }
@@ -106,16 +110,25 @@
  button.addEventListener('click', () => {
   enabled = !enabled;
   if (enabled) unlock();
+  else pending = [];
   applyVolume();
   button.setAttribute('aria-pressed', String(enabled));
   button.textContent = enabled ? '音效：开启' : '音效：关闭';
  });
  unlock();
 
+ function playCues(ready) {
+  ready.forEach((cue, index) => cue.play(audio.currentTime + .015 + index * .10));
+ }
+
  window.updateCelebrationSound = (progress, stageVisible) => {
-  if (enabled && stageVisible && audio?.state === 'running') {
+  if (enabled && stageVisible) {
+   pending = pending.filter(cue => progress >= cue.at && progress < cue.until);
    const crossed = cues.filter(cue => previous < cue.at && progress >= cue.at && progress < cue.until);
-   crossed.forEach((cue, index) => cue.play(audio.currentTime + .015 + index * .10));
+   if (audio?.state === 'running') playCues(crossed);
+   else pending.push(...crossed);
+  } else {
+   pending = [];
   }
   previous = progress;
  };
