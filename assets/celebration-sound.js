@@ -7,9 +7,8 @@
  let audio;
  let master;
  let noise;
- let enabled = true;
+ let enabled = false;
  let previous = 0;
- let pending = [];
 
  function envelope(source, start, duration, volume, attack = .008) {
   const gain = audio.createGain();
@@ -74,12 +73,8 @@
   }}
  ];
 
- function applyVolume() {
-  if (master) master.gain.setTargetAtTime(enabled ? .46 : 0, audio.currentTime, .015);
- }
-
- function unlock() {
-  if (!enabled || audio?.state === 'running') return;
+ button.addEventListener('click', async () => {
+  button.disabled = true;
   try {
    if (!audio) {
     audio = new AudioEngine();
@@ -90,45 +85,22 @@
     const samples = noise.getChannelData(0);
     for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
    }
-   applyVolume();
-   audio.resume().then(() => {
-    if (enabled) playCues(pending);
-    pending = [];
-   }).catch(() => {});
+   if (!enabled) await audio.resume();
+   enabled = !enabled;
+   master.gain.setTargetAtTime(enabled ? .46 : 0, audio.currentTime, .015);
+   button.setAttribute('aria-pressed', String(enabled));
+   button.textContent = enabled ? '音效：开启' : '音效：关闭';
   } catch {
-   button.title = '浏览器暂时无法播放音效';
+   button.textContent = '音效：暂不可用';
+  } finally {
+   button.disabled = false;
   }
- }
-
- function onInteraction(event) {
-  if (!button.contains(event.target)) unlock();
- }
-
- window.addEventListener('click', onInteraction);
- window.addEventListener('pointerup', onInteraction, {passive:true});
- window.addEventListener('keydown', onInteraction);
- button.addEventListener('click', () => {
-  enabled = !enabled;
-  if (enabled) unlock();
-  else pending = [];
-  applyVolume();
-  button.setAttribute('aria-pressed', String(enabled));
-  button.textContent = enabled ? '音效：开启' : '音效：关闭';
  });
- unlock();
-
- function playCues(ready) {
-  ready.forEach((cue, index) => cue.play(audio.currentTime + .015 + index * .10));
- }
 
  window.updateCelebrationSound = (progress, stageVisible) => {
   if (enabled && stageVisible) {
-   pending = pending.filter(cue => progress >= cue.at && progress < cue.until);
    const crossed = cues.filter(cue => previous < cue.at && progress >= cue.at && progress < cue.until);
-   if (audio?.state === 'running') playCues(crossed);
-   else pending.push(...crossed);
-  } else {
-   pending = [];
+   crossed.forEach((cue, index) => cue.play(audio.currentTime + .015 + index * .10));
   }
   previous = progress;
  };
