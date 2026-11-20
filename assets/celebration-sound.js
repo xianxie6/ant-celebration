@@ -7,7 +7,7 @@
  let audio;
  let master;
  let noise;
- let enabled = false;
+ let enabled = true;
  let previous = 0;
 
  function envelope(source, start, duration, volume, attack = .008) {
@@ -73,8 +73,12 @@
   }}
  ];
 
- button.addEventListener('click', async () => {
-  button.disabled = true;
+ function applyVolume() {
+  if (master) master.gain.setTargetAtTime(enabled ? .46 : 0, audio.currentTime, .015);
+ }
+
+ function unlock() {
+  if (!enabled || audio?.state === 'running') return;
   try {
    if (!audio) {
     audio = new AudioEngine();
@@ -85,20 +89,31 @@
     const samples = noise.getChannelData(0);
     for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
    }
-   if (!enabled) await audio.resume();
-   enabled = !enabled;
-   master.gain.setTargetAtTime(enabled ? .46 : 0, audio.currentTime, .015);
-   button.setAttribute('aria-pressed', String(enabled));
-   button.textContent = enabled ? '音效：开启' : '音效：关闭';
+   applyVolume();
+   audio.resume().catch(() => {});
   } catch {
-   button.textContent = '音效：暂不可用';
-  } finally {
-   button.disabled = false;
+   button.title = '浏览器暂时无法播放音效';
   }
+ }
+
+ function onInteraction(event) {
+  if (!button.contains(event.target)) unlock();
+ }
+
+ window.addEventListener('click', onInteraction);
+ window.addEventListener('pointerup', onInteraction, {passive:true});
+ window.addEventListener('keydown', onInteraction);
+ button.addEventListener('click', () => {
+  enabled = !enabled;
+  if (enabled) unlock();
+  applyVolume();
+  button.setAttribute('aria-pressed', String(enabled));
+  button.textContent = enabled ? '音效：开启' : '音效：关闭';
  });
+ unlock();
 
  window.updateCelebrationSound = (progress, stageVisible) => {
-  if (enabled && stageVisible) {
+  if (enabled && stageVisible && audio?.state === 'running') {
    const crossed = cues.filter(cue => previous < cue.at && progress >= cue.at && progress < cue.until);
    crossed.forEach((cue, index) => cue.play(audio.currentTime + .015 + index * .10));
   }

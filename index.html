@@ -69,7 +69,7 @@ body{background:var(--sky-top);font-family:'Bricolage Grotesque','PingFang SC','
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence baseFrequency=".035" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="14"/></filter></svg>
 <div id="track"><div id="stage"><picture class="scene"><source media="(max-width: 700px)" srcset="assets/bg-mobile.webp"><img src="assets/bg-desktop.webp" alt=""></picture><img class="stage-podium" src="assets/podium.webp" alt="">
-<button type="button" id="sound-toggle" aria-pressed="false" aria-label="页面音效" hidden>音效：关闭</button>
+<button type="button" id="sound-toggle" aria-pressed="true" aria-label="页面音效" hidden>音效：开启</button>
 <div class="tx" id="t0"><h1 class="big opening-title"><span class="opening-date">11月19日<span class="opening-weekday">周四</span></span><span>今天有点不一样</span></h1><p class="mono">scroll ↓</p></div>
 <div class="tx" id="t1"><p class="big">发行价 <b>$83</b></p><p class="mono">高于预期区间 $70–78</p></div>
 <div class="tx" id="t2"><p class="big">约 <b>9.8 亿股</b>，募资 <b>$813 亿</b></p><p class="mono">超过 SpaceX 今年 6 月创下的纪录</p></div>
@@ -162,14 +162,20 @@ function cloud(m,o={}){
 const cap=()=>Math.min(N,Math.max(pool.length,5));
 function refill(){if(pool.length&&sky.childElementCount<cap())cloud(pick(),{dl:0})}
 function setPool(a){const was=pool.length;pool=a;if(!was&&a.length)for(let i=0;i<cap();i++)cloud(pick());else refill()}
-const EMPTY=[{id:'h',text:'第一朵云，等你来写。'}];
+const GREETINGS=[
+ '恭喜 Anthropic 上市！',
+ '达里奥，恭喜你和团队走到这一步！',
+ '恭喜敲钟，祝你们接下来一切顺利！',
+ '祝贺 Anthropic，也祝团队接下来做出更多好东西！',
+ '恭喜上市！期待下一次惊喜。'
+].map((text,i)=>({id:'g'+i,text}));
 async function load(){
- if(local){if(first){first=false;say('演示模式：留言只在本次打开期间有效');setPool(pool.length?pool:EMPTY)}return}
+ if(local){if(first){first=false;say('演示模式：留言只在本次打开期间有效');setPool(pool.length?pool:GREETINGS)}return}
  try{const r=await fetch(API+'?select=id,text&order=created_at.desc&limit=300',{headers:H});if(!r.ok)throw new Error('留言读取失败');const d=await r.json();
-  const a=d.map(m=>({id:'s'+m.id,text:String(m.text).slice(0,100)}));
+  const a=d.filter(m=>m.id!==1||m.text!=='【功能测试】留言云已接通 ☁️').map(m=>({id:'s'+m.id,text:String(m.text).slice(0,100)}));
   if(!first)a.forEach(m=>{if(!seen.has(m.id)&&!mine.has(m.id))cloud(m,{once:1,d:45,dl:0})});
-  a.forEach(m=>seen.add(m.id));first=false;setPool(a.length?a:EMPTY)}
- catch(e){if(first){first=false;say('留言库暂时连不上');setPool(EMPTY)}}
+  a.forEach(m=>seen.add(m.id));first=false;setPool([...a,...GREETINGS])}
+ catch(e){if(first){first=false;say('留言库暂时连不上');setPool(GREETINGS)}}
 }
 async function send(){
  const t=$('#in').value.trim();if(!t)return;
@@ -178,7 +184,7 @@ async function send(){
  $('#go').disabled=true;
  try{let id='l'+Date.now();
   if(!local){const r=await fetch(API,{method:'POST',headers:{...H,Prefer:'return=representation'},body:JSON.stringify({text:t})});if(!r.ok)throw 0;id='s'+(await r.json())[0].id}
-  else pool=pool.filter(m=>m.id!=='h').concat({id,text:t});
+  else pool=pool.concat({id,text:t});
   mine.add(id);seen.add(id);cloud({id,text:t},{mine:1,once:1,d:45,dl:0});
   try{localStorage.setItem('lt',Date.now())}catch(e){}
   $('#in').value='';say('你的话变成云，飘上去了 ☁')
